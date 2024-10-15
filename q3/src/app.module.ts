@@ -1,25 +1,19 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Product } from './product/entities/product.entity';
-import { ProductTranslation } from './product/product-translation.entity';
-import { ProductService } from './product/product.service';
-import { ProductController } from './product/product.controller';
-
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { DatabaseConfig } from './config/database.config';
 @Module({
     imports: [
-        TypeOrmModule.forRoot({
-            type: 'postgres',
-            host: 'localhost',
-            port: 5432,
-            username: 'hlab_user',
-            password: 'hlab_password',
-            database: 'hlab_db',
-            entities: [Product, ProductTranslation],
-            synchronize: true,
+        ConfigModule.forRoot({
+            isGlobal: true,
+            envFilePath: `.env.${process.env.NODE_ENV}`,
         }),
-        TypeOrmModule.forFeature([Product, ProductTranslation]),
+        TypeOrmModule.forRootAsync({
+            imports: [ConfigModule],
+            useFactory: (databaseConfig: DatabaseConfig) => databaseConfig.getTypeOrmConfig(),
+            inject: [DatabaseConfig],
+        }),
     ],
-    providers: [ProductService],
-    controllers: [ProductController],
+    providers: [DatabaseConfig],
 })
 export class AppModule { }
