@@ -1,3 +1,5 @@
+Backend Answers
+
 1. I would start with create a new folder in the backend(Assuming we use nest.js) name it as "real-time"
 
 Step to integrate 
@@ -14,4 +16,75 @@ Step to integrate
 
 2. I would get more information from the project manager first. For example, How many team members we have? Then I would provide him/her the list of test strategy plan. 1. Goals 2. Plan 3. Setup Environment 4. Implement continuous testing such as CI/CD 5. Monitor and analyze results 6. Report
 
-3. 
+3. Please see my git repository -> https://github.com/pataratanan/HLAB
+
+
+
+
+React Answers
+
+1.
+	- useCallback preventing unnecessary re-creations of the function on each render.
+
+If we have 
+
+  const [count, setCount] = useState(0);
+  const [otherState, setOtherState] = useState(0);
+  const incrementCount = () => {
+    setCount(prevCount => prevCount + 1);
+  };
+
+  const updateOtherState = () => {
+    setOtherState(otherState + 1);
+  };
+
+We use it in the return JSX, both of that will re-crated on every render, But if we use useCallback and we put empty dependency array the function is created once and never changes
+
+const [count, setCount] = useState(0);
+const [otherState, setOtherState] = useState(0);
+
+// Without useCallback(example provided above), this function would be recreated on every render
+const incrementCount = useCallback(() => {
+    setCount(prevCount => prevCount + 1);
+  }, []);
+
+//and this function will be recreated only when otherState changes
+const updateOtherState = useCallback(() => {
+    setOtherState(otherState + 1);
+  }, [otherState]);
+
+
+
+2. 
+
+import React from 'react';
+import { render, screen, waitFor } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import UserProfile from './UserProfile';
+
+describe('UserProfile', () => {
+  beforeEach(() => {
+    jest.resetAllMocks();
+  });
+
+  it('displays loading state initially', () => {
+    render(<UserProfile userId="123" />);
+    expect(screen.getByText('Loading...')).toBeInTheDocument();
+  });
+
+  it('displays user data when fetch is successful', async () => {
+    const mockUser = { name: 'John Doe', email: 'john@example.com' };
+    global.fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockUser,
+    });
+
+    render(<UserProfile userId="123" />);
+
+    await waitFor(() => {
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+      expect(screen.getByText('Email: john@example.com')).toBeInTheDocument();
+    });
+
+    expect(global.fetch).toHaveBeenCalledWith('https://api.example.com/users/123');
+  });
